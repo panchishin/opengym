@@ -33,11 +33,11 @@ height = len(map[0])
 action_list = ['up','down','right','left','hold']
     
 def move(location,action) :
-    if action == 'up'    : return { 'h' : min(location['h'] + 1, height-1), 'w' : location['w'] }
-    if action == 'down'  : return { 'h' : max(location['h'] - 1, 0),        'w' : location['w'] }
-    if action == 'left'  : return { 'h' : location['h'] , 'w' : min(location['w'] + 1, width-1) }
-    if action == 'right' : return { 'h' : location['h'] , 'w' : max(location['w'] - 1, 0)       }
-    return { 'h':location['h'], 'w':location['w'] }
+    if action == 'up'    : return [ location[0]                   , min(location[1] + 1, height-1) ]
+    if action == 'down'  : return [ location[0]                   , max(location[1] - 1, 0) ]
+    if action == 'left'  : return [ min(location[0] + 1, width-1) , location[1] ]
+    if action == 'right' : return [ max(location[0] - 1, 0)       , location[1] ]
+    return [ location[0] , location[1] ]
 
 
 import sarsa
@@ -50,7 +50,7 @@ action = None
 reward = 0.0
 
 # let it learn by trying a lot.  This is the number of moves, not the number of games.
-trials_max = 8191
+trials_max = 8192
 
 # we keep track of the last several rewards to calculate average reward
 reward_history = []
@@ -65,7 +65,7 @@ for trials in range(trials_max) :
 
     # if the bot touches something other than regular 'ground' then restart.
     if reward != -1.0 :
-        location = {'w':0,'h':0}
+        location = [0,0] # w,h
         action = 'hold'
         last_full_run = current_run
         current_run = [location]
@@ -74,13 +74,12 @@ for trials in range(trials_max) :
     next_location = move( location, action )
     next_action = sarsa.chooseAction( next_location, action_list )
 
-    # 20% of the time the bot does not go where it wants but instead does something random
-    if ( random() <= 0.2 ) and ( trials < trials_max - 100 ) :
-        next_action = choice(action_list)
-        #pass
+    # 5% of the time the bot does not go where it wants but instead does something random
+    if ( random() <= 0.05 ) and ( trials < trials_max - 800 ) :
+        next_action = choice(action_list[:4])
 
     # get reward from map, see top
-    reward = map[next_location['w']][next_location['h']];
+    reward = map[next_location[0]][next_location[1]];
 
     sarsa.update(location,action,reward,next_location,next_action)
 
@@ -116,8 +115,7 @@ else :
 
 print("Here is the last run.")
 
-for i in last_full_run :
-    print(i)
+print( [i for i in last_full_run[:25]] )
 
 map = [ 
   [ 'S', ' ', ' ' ],
@@ -143,8 +141,9 @@ def printMap(map) :
 print("An empty map")
 printMap(map)
 
-for i in last_full_run[:50] : 
-    map[ i['w'] ][ i['h'] ] = "x"
+for i in last_full_run : 
+    map[ i[0] ][ i[1] ] = "x"
 
 print("The last path taken marked by 'x'")
 printMap(map)
+
