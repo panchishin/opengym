@@ -4,6 +4,7 @@ from geneticalgorithm import GeneticAlgorithm
 from neural_pheno import Phenotype
 
 phenotype_population = 50
+file_name = 'data/cartpole_best.pickle'
 
 envir = gym.make('CartPole-v1')
 
@@ -35,7 +36,7 @@ def fitnessFunction(phenotype) :
 
 population = [ Phenotype() for i in range(phenotype_population) ]
 try :
-    with open('cartpole_best.pickle', 'rb') as handle:
+    with open(files_name, 'rb') as handle:
         population = [pickle.load(handle)]
 except :
     pass
@@ -73,7 +74,7 @@ try :
 except :
     pass
 
-with open('cartpole_best.pickle', 'wb') as handle:
+with open(files_name, 'wb') as handle:
     pickle.dump(ga.bestPhenotype(),handle)
 
 envir.close()
