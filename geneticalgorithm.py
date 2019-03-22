@@ -90,3 +90,6 @@ class GeneticAlgorithm:
         scored = self.scoredPopulation()
         return scored[0][1]
 
+    def meanScore(self) :
+        scores = [ item[1] for item in self.scoredPopulation() ]
+        return int(1.0 * sum(scores) / len(scores))
