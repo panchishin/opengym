@@ -54,14 +54,14 @@ print("")
 print("-------------------------------------")
 print("")
 print("Initialize",phenotype_population,"agents for evolution.")
-print("Before evolving the best is {:>3} frames, and mean is {:>3} frames".format(int(ga.bestScore()),int(ga.meanScore())))
+print("Before evolving the best score is {:>3}, and mean score is {:>3}".format(int(ga.bestScore()),int(ga.meanScore())))
 print("")
 print("Starting the evolution process")
 print("")
 try :
     for generation in range(0,101) :
         if generation % 5 == 0:
-            print("generation {:>3}, best is {:>3} frames, and mean is {:>3} frames".format(generation,int(ga.bestScore()),int(ga.meanScore())))
+            print("generation {:>3}, best score is {:>3}, and mean score is {:>3}".format(generation,int(ga.bestScore()),int(ga.meanScore())))
             oneTrial(phenotype=ga.bestPhenotype(),demo=True)
             if ga.bestScore() >= 499 :
                 print("Found a successful candidate")
