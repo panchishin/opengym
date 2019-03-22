@@ -2,7 +2,7 @@ from random import choice, random, shuffle
 
 
 def defaultMutation(phenotype) : return phenotype
-def defaultCrossover(a,b) : return [a,b]
+def defaultCrossover(a,b) : return a
 def defaultFitness(phenotype) : return 0
 
 
@@ -35,13 +35,13 @@ class GeneticAlgorithm:
         return self._mutationFunction(phenotype)
 
     def _crossover(self, phenotype) :
-        return self._crossoverFunction( phenotype, choice(self._population) )[0]
+        return self._crossoverFunction( phenotype, choice(self._population) )
 
     def _doesABeatB(self, a, b) :
         if self._doesABeatBFunction :
             return self._doesABeatBFunction(a,b)
         else :
-            return self._fitnessFunction(a) >= self._fitnessFunction(b)
+            return self._fitnessFunction(a) > self._fitnessFunction(b)
 
 
     def _compete(self) :
