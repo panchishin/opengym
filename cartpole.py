@@ -19,7 +19,7 @@ def oneTrial(phenotype, init_actions=[], demo=False) :
         if count < len(init_actions) :
             action = init_actions[count]
         else :
-            action = int(round( phenotype.compute(state) ))
+            action = int(round( phenotype.compute(state)[0] ))
 
         state, reward, done, info = envir.step(action)
         total_reward += reward
@@ -36,9 +36,10 @@ def fitnessFunction(phenotype) :
 
 population = [ Phenotype() for i in range(phenotype_population) ]
 try :
-    with open(files_name, 'rb') as handle:
+    with open(file_name, 'rb') as handle:
         population = [pickle.load(handle)]
 except :
+    print("FAILED TO OPEN SAVE FILE")
     pass
 
 ga = GeneticAlgorithm(
@@ -74,7 +75,7 @@ try :
 except :
     pass
 
-with open(files_name, 'wb') as handle:
+with open(file_name, 'wb') as handle:
     pickle.dump(ga.bestPhenotype(),handle)
 
 envir.close()

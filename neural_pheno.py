@@ -12,14 +12,16 @@ def genNewB(h):
 
 
 class Phenotype :
-    def __init__(self, clone=None) :
+    def __init__(self, clone=None, shape=[4,5,5,1]) :
 
         if clone :
             self.ms = [ np.copy(clone.ms[i]) for i in range(len(clone.ms)) ]
             self.bs = [ np.copy(clone.bs[i]) for i in range(len(clone.bs)) ]
+            self.shape = clone.shape
         else :
-            self.ms = [ genNewM(4,5) , genNewM(5,5) , genNewM(5,1) ]
-            self.bs = [ genNewB(5) ,   genNewB(5) ,   genNewB(1) ]
+            self.ms = [ genNewM(shape[i],shape[i+1]) for i in range(len(shape)-1) ]
+            self.bs = [ genNewB(shape[i+1]) for i in range(len(shape)-1) ]
+            self.shape = shape
 
 
     def clone(self) :
@@ -30,11 +32,11 @@ class Phenotype :
         result = np.array(input)
         for i in range(len(self.ms)) :
             result = sigmoid( np.matmul( result , self.ms[i] ) + self.bs[i] )
-        return result[0]
+        return result
 
 
     def mutate(self) :
-        rand_pheno = Phenotype()
+        rand_pheno = Phenotype(shape=self.shape)
         if random() < .05 :
             return rand_pheno
         clone = self.clone()

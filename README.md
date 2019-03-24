@@ -22,3 +22,10 @@ I used ffmpeg to create the above gif
 ```
 ffmpeg -i smooth.mov -s 400x200 -pix_fmt rgb8 -r 30 -f gif - | gifsicle --optimize=3 --delay=3 > smooth.gif
 ```
+
+Other environments of interest
+
+https://gym.openai.com/envs/BipedalWalker-v2/
+
+https://gym.openai.com/envs/CarRacing-v0/
+
