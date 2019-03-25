@@ -1,8 +1,7 @@
 import pickle
 import gym
 import math
-from geneticalgorithm import GeneticAlgorithm
-from neural_pheno import Phenotype
+import sarsa
 
 envir = gym.make('CartPole-v1')
 action_list = [0,1]
@@ -53,7 +52,7 @@ print("-------------------------------------")
 print("")
 print("Initialize SARSA agent.")
 
-import sarsa
+
 agent_settings = {
     'alpha' : 0.1,     # default to a low(-ish) learning rate
     'gamma' : 0.90,     # default of a high(-ish) dependance on future expectation

@@ -22,7 +22,7 @@ def crossoverFunction(a, b) :
             x[i] = b[i]
             y[i] = a[i]
 
-    return x , y
+    return x
 
 
 def fitnessFunction(phenotype) :
@@ -43,9 +43,13 @@ ga = GeneticAlgorithm(
     )
 
 
+print("Trying to make all the numbers 50's")
+print("The inital list of numbers is")
+print(ga.bestPhenotype())
 print("The starting score is:",ga.bestScore())
-for iteration in range(1,1001) :
+for iteration in range(1,501) :
     ga.evolve()
-    if iteration % 100 == 0:
+    if iteration % 50 == 0:
         print("iteration",iteration,", best score =",ga.bestScore())
 
+print(ga.bestPhenotype())

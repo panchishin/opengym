@@ -1,7 +1,6 @@
 import pickle
 import gym
-from geneticalgorithm import GeneticAlgorithm
-from neural_pheno import Phenotype
+from geneticalgorithm import GeneticAlgorithm, Phenotype
 
 phenotype_population = 50
 file_name = 'data/cartpole_best.pickle'
@@ -61,7 +60,7 @@ print("")
 print("Starting the evolution process")
 print("")
 try :
-    for generation in range(0,101) :
+    for generation in range(0,501) :
         if generation % 5 == 0:
             print("generation {:>3}, best score is {:>3}, and mean score is {:>3}".format(generation,int(ga.bestScore()),int(ga.meanScore())))
             oneTrial(phenotype=ga.bestPhenotype(),demo=True)
