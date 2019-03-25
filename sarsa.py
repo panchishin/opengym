@@ -94,3 +94,44 @@ class Sarsa:
         actions = getRewards(self.weights,state,action_list,self.config['defaultReward'])
         return policies[self.config['policy']](actions,self.config['epsilon'])
     
+
+
+class TransformState:
+    def __init__(self, transFunc, config=None, impl=None):
+        if impl != None :
+            self.impl = impl
+        else :
+            self.impl = Sarsa(config)
+        self.transFunc = transFunc
+
+    def getRewards(self, state, action_list) :
+        return self.impl.getRewards(self.transFunc(state),action_list)
+
+    def update(self, state0, action0, reward1, state1, action1) :
+        return self.impl.update(self.transFunc(state0), action0, reward1, self.transFunc(state1), action1)
+
+    def chooseAction(self, state, action_list):
+        return self.impl.chooseAction(self.transFunc(state), action_list)
+
+
+class Combine:
+    def __init__(self, implList, config=None):
+        self.implList = implList
+        self.config = config or cloneJSON(defaults)
+
+    def update(self, state0, action0, reward1, state1, action1) :
+        for impl in self.implList :
+            return impl.update(state0, action0, reward1, state1, action1)
+
+    def chooseAction(self, state, action_list):
+        rewards = [ impl.getRewards(state,action_list) for impl in self.implList ]
+        actions = {}
+        for action in action_list :
+            actions[action] = 0
+        for reward in rewards :
+            for action in actionList :
+                if action in reward :
+                    actions[action] += reward[action]
+        return policies[self.config['policy']](actions,self.config['epsilon'])
+
+
