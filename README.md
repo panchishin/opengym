@@ -2,8 +2,10 @@
 
 Training an agent to balance a pole on a cart.
 
-Currently the agent 'learns' through artificial evolution.
 
+## Artificial Evolution
+
+The agent 'learns' through artificial evolution.
 ```
 python cartpole.py
 ```
@@ -15,6 +17,16 @@ The script stores the best agent in `cartpole_best.pickle`.  Delete that file if
 The script takes some time to get here.  Here is a video of it struggling in the beginning
 
 <img src="./pics/struggle.gif" alt="An untrained agent" width="400"/>
+
+
+## SARSA
+
+cartpole_sarsa.py uses sarsa to learn how to control the cart.
+```
+python cartpole_sarsa.py
+```
+<img src="./pics/struggle.mp4" alt="Sarsa training" width="400"/>
+
 
 
 

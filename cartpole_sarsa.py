@@ -1,5 +1,6 @@
 import pickle
 import gym
+import math
 from geneticalgorithm import GeneticAlgorithm
 from neural_pheno import Phenotype
 
@@ -8,7 +9,7 @@ action_list = [0,1]
 file_name = 'data/cartpole_sarsa_best.pickle'
 
 def digitizeState(state) :
-    return tuple([ int(round(x*5.)) for x in state ])
+    return tuple([ int(round(x*10.)) for x in state ])
 
 def oneTrial(agent, init_actions=[], demo=False) :
     state0 = state1 = digitizeState(envir.reset())
@@ -54,11 +55,11 @@ print("Initialize SARSA agent.")
 
 import sarsa
 agent_settings = {
-    'alpha' : 0.5,     # default to a low(-ish) learning rate
-    'gamma' : 0.8,     # default of a high(-ish) dependance on future expectation
+    'alpha' : 0.1,     # default to a low(-ish) learning rate
+    'gamma' : 0.90,     # default of a high(-ish) dependance on future expectation
     'defaultReward' : 0,
     'epsilon' : 0.001,
-    'policy' : 'epsilonGreedy'
+    'policy' : 'greedy' # 'epsilonGreedy'
 }
 agent = sarsa.Sarsa(config = agent_settings)
 
@@ -72,28 +73,31 @@ except :
 print("")
 print("Starting the training process")
 print("")
-lambda_score = 0
+def doSession(sessions = 8192*8) :
+    lambda_score = 0
+    for session in range(1,sessions+1) :
+        score = oneTrial(agent=agent)
+        lambda_score = 1. * ( min(4.,session) * lambda_score + score ) / min(5.,session)
+        if ( math.log2(session) % 1 == 0 or session % 2048 == 0 ) and session >= 16:
+            print("session {:>5}, score is {:>5}".format(session,int(lambda_score)))
+            oneTrial(agent=agent,demo=True)
+            if score >= 499 :
+                return
+
+
 try :
-    for session in range(0,90001) :
-            score = oneTrial(agent=agent)
-            lambda_score = 1. * ( min(9.,session+1) * lambda_score + score ) / min(10.,session+1)
-            if session % 1000 == 0:
-                print("session {:>5}, score is {:>5}".format(session,int(lambda_score)))
-                oneTrial(agent=agent,demo=True)
-                if score >= 499 :
-                    break
+    doSession()
 except :
+    print("Breaking out of training")
     pass
 
-oneTrial(agent=agent,demo=True)
-
-
+print("Writing agent to file.")
 with open(file_name, 'wb') as handle:
     pickle.dump(agent,handle)
 
 
 print("Finished sessions.")
-for count in range(3,0,-1) :
+for count in range(2,0,-1) :
     print("Demoing agent {} more times".format(count))
     oneTrial(agent=agent,demo=True)
 
