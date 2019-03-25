@@ -28,8 +28,6 @@ def oneTrial(agent, init_actions=[], demo=False) :
         state2 = digitizeState(state2)
 
         if reward0 != None :
-            #if demo :
-            #    print(state0,action0,reward0,"(",agent.getRewards( state0, action_list ),")",state1,action1)
             reward_temp = -1000 if done else reward0
             agent.update(state0,action0,reward_temp,state1,action1)
 
