@@ -22,7 +22,7 @@ def oneTrial(agent, init_actions=[], demo=False) :
         if count < len(init_actions) :
             action1 = init_actions[count]
         else :
-            action1 = agent.chooseAction( state0, action_list )
+            action1 = agent.chooseAction( state1, action_list )
 
         state2, reward1, done, info = env.step(action1)
         state2 = digitizeState(state2)
