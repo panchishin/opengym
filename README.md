@@ -25,7 +25,7 @@ cartpole_sarsa.py uses sarsa to learn how to control the cart.
 ```
 python cartpole_sarsa.py
 ```
-<img src="./pics/struggle.mp4" alt="Sarsa training" width="400"/>
+<img src="./pics/sarsa.mp4" alt="Sarsa training" width="400"/>
 
 
 
