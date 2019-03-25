@@ -6,22 +6,22 @@ from neural_pheno import Phenotype
 phenotype_population = 50
 file_name = 'data/cartpole_best.pickle'
 
-envir = gym.make('CartPole-v1')
+env = gym.make('CartPole-v1')
 
 def oneTrial(phenotype, init_actions=[], demo=False) :
-    state = envir.reset()
+    state = env.reset()
     total_reward = 0
 
     for count in range(501) :
         if demo :
-            envir.render()
+            env.render()
 
         if count < len(init_actions) :
             action = init_actions[count]
         else :
             action = int(round( phenotype.compute(state)[0] ))
 
-        state, reward, done, info = envir.step(action)
+        state, reward, done, info = env.step(action)
         total_reward += reward
 
         if done :
@@ -78,5 +78,5 @@ except :
 with open(file_name, 'wb') as handle:
     pickle.dump(ga.bestPhenotype(),handle)
 
-envir.close()
+env.close()
 
