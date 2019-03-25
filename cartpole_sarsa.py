@@ -3,7 +3,7 @@ import gym
 import math
 import sarsa
 
-envir = gym.make('CartPole-v1')
+env = gym.make('CartPole-v1')
 action_list = [0,1]
 file_name = 'data/cartpole_sarsa_best.pickle'
 
@@ -11,20 +11,20 @@ def digitizeState(state) :
     return tuple([ int(round(x*10.)) for x in state ])
 
 def oneTrial(agent, init_actions=[], demo=False) :
-    state0 = state1 = digitizeState(envir.reset())
+    state0 = state1 = digitizeState(env.reset())
     total_reward = 0
     reward0 = None
 
     for count in range(501) :
         if demo :
-            envir.render()
+            env.render()
 
         if count < len(init_actions) :
             action1 = init_actions[count]
         else :
             action1 = agent.chooseAction( state0, action_list )
 
-        state2, reward1, done, info = envir.step(action1)
+        state2, reward1, done, info = env.step(action1)
         state2 = digitizeState(state2)
 
         if reward0 != None :
@@ -32,6 +32,7 @@ def oneTrial(agent, init_actions=[], demo=False) :
             #    print(state0,action0,reward0,"(",agent.getRewards( state0, action_list ),")",state1,action1)
             reward_temp = -1000 if done else reward0
             agent.update(state0,action0,reward_temp,state1,action1)
+
         state0 = state1
         state1 = state2
         action0 = action1
@@ -100,4 +101,4 @@ for count in range(2,0,-1) :
     print("Demoing agent {} more times".format(count))
     oneTrial(agent=agent,demo=True)
 
-envir.close()
+env.close()
