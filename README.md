@@ -9,6 +9,7 @@ The agent 'learns' through artificial evolution.
 ```
 python cartpole.py
 ```
+This does converge consistantly within 400 generations x 50 simulations per generation = 20,000 simulations
 
 <img src="./pics/smooth.gif" alt="A trained agent" width="400"/>
 
@@ -21,10 +22,11 @@ The script takes some time to get here.  Here is a video of it struggling in the
 
 ## SARSA
 
-cartpole_sarsa.py uses sarsa to learn how to control the cart.
+The agent uses sarsa state machine to learn how to control the cart.
 ```
 python cartpole_sarsa.py
 ```
+This doesn't converge in a reasonable timeframe.  After 20,000 simulations it still doesn't get consistantly above 300.
 
 Start of training
 
@@ -34,6 +36,18 @@ After several iterations
 
 <img src="./pics/sarsa2.gif" alt="Sarsa training" width="400"/>
 
+
+## Q Learning with Tensorflow
+
+The agent uses tensorflow and qlearning to learn a policy for controlling the cart.
+```
+python cartpole_nn.py
+```
+It is able to regularly converge on a solution within 5,000 simulations.
+
+After training
+
+<img src="./pics/qlearning_with_neural_net.gif" alt="NN Qlearning training" width="400"/>
 
 
 
