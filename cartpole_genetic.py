@@ -3,7 +3,7 @@ import gym
 from geneticalgorithm import GeneticAlgorithm, Phenotype
 
 phenotype_population = 50
-file_name = 'data/cartpole_best.pickle'
+file_name = 'data/cartpole_genetic.pickle'
 
 env = gym.make('CartPole-v1')
 
