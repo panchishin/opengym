@@ -16,8 +16,8 @@ print("-------------------------------------")
 print("")
 print("Initialize Tensorflow agent.")
 
-alpha = 0.05     # default to a low(-ish) learning rate
-gamma = 0.95     # default of a high(-ish) dependance on future expectation
+alpha = 0.2   # default to a low(-ish) learning rate
+gamma = 0.8   # default of a high(-ish) dependance on future expectation
 epsilon = 0.1 # the chance of making a random action
 
 import tensorflow as tf
@@ -63,16 +63,15 @@ def oneTrial(demo=False) :
 
         action_scores = np.array([ scoreAction( state1, action_list[i]) for i in action_list ])
         action1 = action_scores.argmax()
-        if random() <= epsilon :
+        if not demo and random() <= epsilon :
             action1 = choice([0,1])
 
         state2, reward1, done, info = env.step(action1)
         frames += reward1
 
-        if count > 0 :
-            reward_temp = -10 if ( done and frames < 490 ) else reward0
-            if math.pow(action_scores[action1] - reward_temp,2) > 0.2 :
-                updatePolicy( state0,action0,reward_temp*(1-gamma) + action_scores[action1]*gamma )
+        if not demo and count > 0 :
+            reward_temp = 0 if ( done and frames < 490 ) else reward0
+            updatePolicy( state0,action0,reward_temp + action_scores[action1]*gamma )
 
         state0 = state1
         state1 = state2
@@ -95,10 +94,10 @@ def doSession(sessions = 128*8) :
     for session in range(1,sessions+1) :
         score = oneTrial()
         lambda_score = 1. * ( (min(10.,session)-1.) * lambda_score + score ) / min(10.,session)
-        if ( math.log2(session) % 1 == 0 or session % 64 == 0 ) and session >= 16:
-            print("session {:>5}, score is {:>5}, avg {:>5}".format(session,int(score),int(lambda_score)))
+        if (score >= 499 and lambda_score >= 400 and session >= 16) or ( math.log2(session) % 1 == 0 or session % 64 == 0 ) and session >= 16:
+            print("session {:>5}, score is {:>5}, λ 10 avg {:>5}".format(session,int(score),int(lambda_score)))
             oneTrial(demo=True)
-            if lambda_score >= 400 :
+            if score >= 499 and lambda_score >= 400 :
                 print("WE DID IT!")
                 return
 
