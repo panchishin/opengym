@@ -62,6 +62,12 @@ Here is how it progressed, with one demonstration shown per 30 simulations.
 
 <img src="./pics/tpe_cart.gif" alt="TPE Optimization" width="400"/>
 
+With some score output
+
+<img src="./pics/cartpole_hp.gif" alt="TPE Optimization" width="400"/>
+
+
+
 
 I used ffmpeg to create the above gif
 ```
