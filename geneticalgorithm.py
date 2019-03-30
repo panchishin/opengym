@@ -110,7 +110,7 @@ def _genNewB(h):
 
 
 class Phenotype :
-    def __init__(self, clone=None, shape=[4,5,5,1]) :
+    def __init__(self, clone=None, shape=[4,5,5,1], data=None) :
 
         if clone :
             self.ms = [ np.copy(clone.ms[i]) for i in range(len(clone.ms)) ]
@@ -120,6 +120,12 @@ class Phenotype :
             self.ms = [ _genNewM(shape[i],shape[i+1]) for i in range(len(shape)-1) ]
             self.bs = [ _genNewB(shape[i+1]) for i in range(len(shape)-1) ]
             self.shape = shape
+
+        if data and shape :
+            for i in range(len(self.ms)) :
+                self.ms[i] = np.array(data[0][i]).reshape(self.ms[i].shape)
+            for i in range(len(self.bs)) :
+                self.bs[i] = np.array(data[1][i]).reshape(self.bs[i].shape)
 
 
     def clone(self) :
@@ -157,4 +163,19 @@ class Phenotype :
             other.bs[i] = self.bs[i] * mask + other.bs[i] * (1 - mask)
 
         return other
+
+
+if __name__ == "__main__" :
+    print("Doing a test.  Random")
+    a = Phenotype(shape=[4,3,1])
+    print("a.ms")
+    print(a.ms)
+    print("a.ms")
+    print(a.ms)
+    print("Range")
+    a = Phenotype(shape=[4,3,1],data= [ [ range(4*3) , range(3*1) ] , [ range(3), 0 ] ])
+    print("a.ms")
+    print(a.ms)
+    print("a.ms")
+    print(a.ms)
 

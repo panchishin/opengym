@@ -50,6 +50,18 @@ After training
 <img src="./pics/qlearning_with_neural_net.gif" alt="NN Qlearning training" width="400"/>
 
 
+# TPE Optimization
+
+Use Bayesian Optimization on the neural net weights.
+```
+python cartpole_hp.py
+```
+It is able to converge on a solution within 120 simulations.
+
+Here is how it progressed, with one demonstration shown per 30 simulations.
+
+<img src="./pics/tpe_cart.gif" alt="TPE Optimization" width="400"/>
+
 
 I used ffmpeg to create the above gif
 ```
