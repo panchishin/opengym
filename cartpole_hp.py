@@ -44,13 +44,13 @@ def oneTrial(phenotype, init_actions=[], demo=False, label="Unlabeled") :
     if demo :
         for i in range(30-count) :
             video.append( video[-1] )
-        video = np.array(video)[:,300:700:4,::4]  # reshape from 800x1200 to 200x300
+        video = np.array(video)[:,300:700:4,::4]  # reshape from 800x1200 to 100x300
         video[:,0:40,0:160,:] -= createLabel(text=label + " score " + str(int(total_reward)),width=160,height=40)
         if total_reward < 200 :
             video[-15:,0:40,0:160,1:] = 64
         elif total_reward >= 400 :
-            video[-15:,0:40,0:160,0] = 64
-            video[-15:,0:40,0:160,2] = 64
+            video[60:,0:40,0:160,0] = 64
+            video[60:,0:40,0:160,2] = 64
         return video
 
     else :
