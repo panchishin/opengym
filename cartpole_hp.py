@@ -62,7 +62,7 @@ def oneTrial(phenotype, init_actions=[], demo=False, label="Unlabeled") :
 
 def fitnessFunction(args) :
     phenotype = ga.Phenotype(shape=[4,5,1],data=args)
-    return -1 * ( oneTrial(phenotype) ) # + oneTrial(phenotype,[0,0,0,0,0]) + oneTrial(phenotype,[1,1,1,1,1]) ) / 3.0
+    return -1 * oneTrial(phenotype)
 
 
 from hyperopt import hp
