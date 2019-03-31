@@ -19,15 +19,27 @@ def createLabel(text, width=80, height=40) :
     d.text((12,12), " " + text, fill=(255,255,255))
     return np.asarray(img)
 
+def postAssembleImages(images, label, score) :
+    for i in range(30) :
+        images.append( images[-1] )
+    video = np.array(images)[:,300:700:2,::2]  # reshape from 800x1200 to 100x300
+    video[:,0:40,0:160,:] -= createLabel(text=label + " score " + str(int(score)),width=160,height=40)
+    if score < 500 :
+        video[-30:,0:40,0:160,1:] = 64
+    else :
+        video[60:,0:40,0:160,0] = 64
+        video[60:,0:40,0:160,2] = 64
+    return video
+
 
 def oneTrial(phenotype, init_actions=[], demo=False, label="Unlabeled") :
     state = env.reset()
     total_reward = 0
-    video = []
+    images = []
 
     for count in range(501) :
         if demo :
-            video.append( env.render(mode='rgb_array') )
+            images.append( env.render(mode='rgb_array') )
 
 
         if count < len(init_actions) :
@@ -42,16 +54,7 @@ def oneTrial(phenotype, init_actions=[], demo=False, label="Unlabeled") :
             break
 
     if demo :
-        for i in range(30-count) :
-            video.append( video[-1] )
-        video = np.array(video)[:,300:700:4,::4]  # reshape from 800x1200 to 100x300
-        video[:,0:40,0:160,:] -= createLabel(text=label + " score " + str(int(total_reward)),width=160,height=40)
-        if total_reward < 200 :
-            video[-15:,0:40,0:160,1:] = 64
-        elif total_reward >= 400 :
-            video[60:,0:40,0:160,0] = 64
-            video[60:,0:40,0:160,2] = 64
-        return video
+        return postAssembleImages(images=images, label=label, score=total_reward)
 
     else :
         return total_reward
