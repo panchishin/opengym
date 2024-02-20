@@ -32,5 +32,23 @@ def plot_res(values, title=''):
     ax[1].legend()
     plt.show()
 
+
+def plot_many(values, title=''):   
+    ''' Plot the reward curve and histogram of results over time.'''
+    # Update the window after each episode
+    # clear_output(wait=True)
+    
+    # Define the figure
+    f, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,5))
+    f.suptitle(title)
+    for value in values:
+        ax.plot(value)
+    ax.axhline(195, c='red',ls='--', label='goal')
+    ax.set_xlabel('Episodes')
+    ax.set_ylabel('Reward')
+    ax.legend()
+    
+    plt.show()
+
 if __name__ == "__main__":
-    plot_res([1,2,3,4,5,4,3,2,1],"test")
+    plot_many([[200,400,100],[100,200,300,400,500,400,300,200,100]],"test")
