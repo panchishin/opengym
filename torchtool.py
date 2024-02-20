@@ -239,6 +239,10 @@ for d in [simple_data,dqn_replay_data,double_dqn_data]:
 
 plot_many(data, titles=["simple","replay","double"])
 
-plot_many(simple_data , title='Simple DQL')
-plot_many(dqn_replay_data , title='Replay DQL')
-plot_many(double_dqn_data , title='Douple Replay DQL')
+# plot_many(simple_data , title='Simple DQL')
+# plot_many(dqn_replay_data , title='Replay DQL')
+# plot_many(double_dqn_data , title='Douple Replay DQL')
+
+a = np.array([ x + [x[-1]]*(episodes-len(x)) for x in simple_data])
+plot_many([a.mean(0).tolist(), a.std(0).tolist()], titles=["simple_data","1 std"])
+
