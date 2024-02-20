@@ -33,7 +33,7 @@ def plot_res(values, title=''):
     plt.show()
 
 
-def plot_many(values, title=''):   
+def plot_many(values, title='', titles=None):
     ''' Plot the reward curve and histogram of results over time.'''
     # Update the window after each episode
     # clear_output(wait=True)
@@ -41,8 +41,12 @@ def plot_many(values, title=''):
     # Define the figure
     f, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,5))
     f.suptitle(title)
-    for value in values:
-        ax.plot(value)
+    if titles is None:
+        for value in values:
+            ax.plot(value)
+    else:
+        for value, label in zip(values, titles):
+            ax.plot(value, label=label)
     ax.axhline(195, c='red',ls='--', label='goal')
     ax.set_xlabel('Episodes')
     ax.set_ylabel('Reward')
