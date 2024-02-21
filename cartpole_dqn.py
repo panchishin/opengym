@@ -22,8 +22,8 @@ class DQN():
     def update(self, state, y):
         """Update the weights of the network given a training sample. """
         y_pred = self.model(torch.Tensor(state))
-        loss = self.loss(y_pred, Variable(torch.Tensor(y)))
         self.optimizer.zero_grad()
+        loss = self.loss(y_pred, Variable(torch.Tensor(y)))
         loss.backward()
         self.optimizer.step()
 
