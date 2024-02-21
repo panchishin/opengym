@@ -9,7 +9,7 @@ import numpy as np
 
 class DQN():
     ''' Deep Q Neural Network class. '''
-    def __init__(self, state_dim, action_dim, hidden_dim, lr=0.01):
+    def __init__(self, state_dim, action_dim, hidden_dim=32, lr=0.005):
             self.loss = torch.nn.MSELoss()
             self.model = torch.nn.Sequential(
                             torch.nn.Linear(state_dim, hidden_dim),   torch.nn.LeakyReLU(),
@@ -17,7 +17,6 @@ class DQN():
                             torch.nn.Linear(hidden_dim, action_dim),  torch.nn.Sigmoid(),
             )
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr)
-
 
 
     def update(self, state, y):
@@ -81,16 +80,16 @@ class DQN_double():
 
 
 
-
-def q_learning(env, model, episodes, gamma=0.9, 
-               epsilon=0.3, eps_decay=0.99,
+def q_learning(env, model, episodes, gamma=0.95, 
+               epsilon=0.1, eps_decay=0.99,
                replay=False, replay_size=20,
-               double=False, 
-               n_update=10, verbose=True, memory=None):
+               double=False, error_threshold=0.03,
+               n_update=10, verbose=False, memory=None):
     """Deep Q Learning algorithm using the DQN. """
     final = []
     memory = memory or []
     win_count = 0
+    error_threshold = math.pow(error_threshold,2)
 
     for episode in range(1,episodes+1):
         # Reset state
@@ -98,8 +97,6 @@ def q_learning(env, model, episodes, gamma=0.9,
         done = False
         total = 0
         model_updates = 0
-
-        total_error = 0
         
         while not done and total < 1500:
             # Implement greedy search policy to explore the state space
@@ -122,10 +119,7 @@ def q_learning(env, model, episodes, gamma=0.9,
             q_values_next = model.predict(next_state)
             predicted_reward = torch.max(q_values_next).item()
 
-            # total_error += math.pow(predicted_reward - reward,2)
-            if math.pow(predicted_reward - reward,2) > 0.04:
-            # if total_error > 0.04:
-                # total_error = 0
+            if math.pow(predicted_reward - reward,2) > error_threshold:
                 if replay:
                     memory.append((state, action, next_state, reward, done))
                     memory = memory[-replay_size*2:]
@@ -134,8 +128,6 @@ def q_learning(env, model, episodes, gamma=0.9,
                     q_values[action] = reward if done else (1-gamma)*reward + gamma*predicted_reward
                     model.update(state, q_values)
                 model_updates += 1
-            # else :
-                # total_error *= 0.5
 
             if double:
                 # Update target network every n_update steps
@@ -153,7 +145,7 @@ def q_learning(env, model, episodes, gamma=0.9,
         final.append(total)
         
         if verbose:
-            print(f"episode: {episode}, epsilon {int(epsilon*1000)}/1000 model updates {model_updates} reward: {int(total)} " + "*"*int(total/20))
+            print(f"episode: {episode}, epsilon {int(epsilon*100)}/100 model updates {model_updates} reward: {int(total)} " + "*"*int(total/20))
 
         if total >= 1500:
             win_count += 1
@@ -170,74 +162,41 @@ def q_learning(env, model, episodes, gamma=0.9,
 import gym
 env = gym.make('CartPole-v1')
 
-# Number of states
 n_state = env.observation_space.shape[0]
-# Number of actions
 n_action = env.action_space.n
-episodes = 1000
+episodes = 500
 n_hidden = 32
 lr = 0.005
 epsilon = 0.1
 gamma = 0.95
 trials = 20
+error_threshold = 0.03
 
-save_file = "simple-replay-double-dqn.pickle"
+save_file = "simple.pickle"
 
 # check if the file exists
 import os
 if os.path.exists(save_file):
     # load the data
     with open(save_file, 'rb') as f:
-        simple_data, dqn_replay_data, double_dqn_data = pickle.load(f)
+        samples = pickle.load(f)
+
 else:
+    samples = []
     simple_data = []
     for _ in range(trials):
-        print("DQN", _)
         dqn = DQN(n_state, n_action, n_hidden, lr)
-        simple_data.append( q_learning(env, dqn, episodes, gamma=gamma, epsilon=epsilon) )
-
-    dqn_replay_data = []
-    for _ in range(trials):
-        print("DQN_replay", _)
-        dqn = DQN_replay(n_state, n_action, n_hidden, lr)
-        dqn_replay_data.append( q_learning(env, dqn, episodes, gamma=gamma, epsilon=epsilon, replay=True) )
-
-    double_dqn_data = []
-    for _ in range(trials):
-        print("DQN_double", _)
-        dqn = DQN_double(n_state, n_action, n_hidden, lr)
-        double_dqn_data.append( q_learning(env, dqn, episodes, gamma=gamma, epsilon=epsilon, replay=True, double=True, n_update=10) )
+        simple_data.append( q_learning(env, dqn, episodes, gamma=gamma, epsilon=epsilon, error_threshold=error_threshold) )
+        print("error_threshold", error_threshold, "trial", _,"steps", len(simple_data[-1]))
+    samples.append(simple_data)
 
     # save the data
     with open(save_file, 'wb') as f:
-        pickle.dump([simple_data, dqn_replay_data, double_dqn_data], f)
-
-
-# plot_many(simple_data , title='Simple DQL')
-# plot_many(dqn_replay_data , title='Replay DQL')
-# plot_many(double_dqn_data , title='Douple Replay DQL')
-
-# def plot_mean(dqn_data, title):
-#     data = [ x + [x[-1]]*(episodes-len(x)) for x in dqn_data ]
-#     import numpy as np
-#     data = np.array(data)
-#     plot_res(data.mean(0).tolist(),title)
-
-
-# plot_mean(simple_data , title='Simple DQL')
-# plot_mean(dqn_replay_data , title='Replay DQL')
-# plot_mean(double_dqn_data , title='Douple Replay DQL')
+        pickle.dump(samples, f)
 
 data = []
-for d in [simple_data,dqn_replay_data,double_dqn_data]:
+for d in samples:
     data.append( np.array([ x + [x[-1]]*(episodes-len(x)) for x in d ]).mean(0).tolist() )
 
-plot_many(data, titles=["simple","replay","double"])
-
-# plot_many(simple_data , title='Simple DQL')
-# plot_many(dqn_replay_data , title='Replay DQL')
-# plot_many(double_dqn_data , title='Douple Replay DQL')
-
-a = np.array([ x + [x[-1]]*(episodes-len(x)) for x in simple_data])
-plot_many([a.mean(0).tolist(), a.std(0).tolist()], titles=["simple_data","1 std"])
+plot_many(samples[0], titles=[f"trial{x}" for x in range(trials)])
 
