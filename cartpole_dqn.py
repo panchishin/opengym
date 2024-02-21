@@ -1,3 +1,9 @@
+"""
+Experiements to run
+ - initialize the DQN network to estimate optimistic Q values
+ - use a bottlneck layer for identifying how many times the network has seen this state to calculate the regret for exploration (instead of epsilon greedy)
+"""
+
 import math
 import pickle
 import torch
@@ -6,18 +12,19 @@ from plottool import plot_res, plot_many
 import random
 import numpy as np
 
+def clamp(new_value,clamp,old_value):
+    return max(old_value-clamp, min(new_value,old_value+clamp))
 
 class DQN():
     ''' Deep Q Neural Network class. '''
     def __init__(self, *, state_dim, action_dim, hidden_dim=32, lr=0.005):
-            self.loss = torch.nn.MSELoss()
+            self.loss = torch.nn.MSELoss() # just as good as huber loss
             self.model = torch.nn.Sequential(
                             torch.nn.Linear(state_dim, hidden_dim),   torch.nn.LeakyReLU(),
                             torch.nn.Linear(hidden_dim, hidden_dim),  torch.nn.Tanh(),
                             torch.nn.Linear(hidden_dim, action_dim),  torch.nn.Sigmoid(),
             )
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr)
-
 
     def update(self, state, y):
         """Update the weights of the network given a training sample. """
@@ -27,16 +34,13 @@ class DQN():
         loss.backward()
         self.optimizer.step()
 
-
     def predict(self, state):
         """ Compute Q values for all actions using the DQL. """
         with torch.no_grad():
             return self.model(torch.Tensor(state))
 
 
-def q_learning(*, env, model, episodes, 
-               gamma=0.95, epsilon=0.1, eps_decay=0.99,
-               error_threshold=0.03, verbose=False):
+def q_learning(*, env, model, episodes=500, gamma=0.95, epsilon=0.1, eps_decay=0.99, clip_size=0.2, error_threshold=0.03, verbose=False):
     """Deep Q Learning algorithm using the DQN. """
     final = []
     win_count = 0
@@ -65,7 +69,12 @@ def q_learning(*, env, model, episodes,
             predicted_reward = torch.max(q_values_next).item()
 
             if math.pow(predicted_reward - reward,2) > error_threshold:
-                q_values[action] = reward if done else (1-gamma)*reward + gamma*predicted_reward
+                if done:
+                    q_values[action] = reward
+                else:
+                    updated_value = (1-gamma)*reward + gamma*predicted_reward
+                    q_values[action] = clamp(new_value=updated_value,clamp=clip_size,old_value=q_values[action])
+
                 model.update(state, q_values)
                 model_updates += 1
         
