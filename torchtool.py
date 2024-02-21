@@ -12,15 +12,10 @@ class DQN():
     def __init__(self, state_dim, action_dim, hidden_dim, lr=0.01):
             self.loss = torch.nn.MSELoss()
             self.model = torch.nn.Sequential(
-                            torch.nn.Linear(state_dim, hidden_dim),
-                            torch.nn.LeakyReLU(),
-                            # torch.nn.Tanh(),
-                            torch.nn.Linear(hidden_dim, hidden_dim),
-                            # torch.nn.LeakyReLU(),
-                            torch.nn.Tanh(),
-                            torch.nn.Linear(hidden_dim, action_dim),
-                            torch.nn.Sigmoid(),
-                    )
+                            torch.nn.Linear(state_dim, hidden_dim),   torch.nn.LeakyReLU(),
+                            torch.nn.Linear(hidden_dim, hidden_dim),  torch.nn.Tanh(),
+                            torch.nn.Linear(hidden_dim, action_dim),  torch.nn.Sigmoid(),
+            )
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr)
 
 
