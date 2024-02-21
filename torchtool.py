@@ -179,15 +179,12 @@ env = gym.make('CartPole-v1')
 n_state = env.observation_space.shape[0]
 # Number of actions
 n_action = env.action_space.n
-# Number of episodes
 episodes = 1000
-# Number of hidden nodes in the DQN
-n_hidden = 64
-# Learning rate
-lr = 0.001
+n_hidden = 32
+lr = 0.005
 epsilon = 0.1
-gamma = 0.9
-trials = 50
+gamma = 0.95
+trials = 20
 
 save_file = "simple-replay-double-dqn.pickle"
 
@@ -200,16 +197,19 @@ if os.path.exists(save_file):
 else:
     simple_data = []
     for _ in range(trials):
+        print("DQN", _)
         dqn = DQN(n_state, n_action, n_hidden, lr)
         simple_data.append( q_learning(env, dqn, episodes, gamma=gamma, epsilon=epsilon) )
 
     dqn_replay_data = []
     for _ in range(trials):
+        print("DQN_replay", _)
         dqn = DQN_replay(n_state, n_action, n_hidden, lr)
         dqn_replay_data.append( q_learning(env, dqn, episodes, gamma=gamma, epsilon=epsilon, replay=True) )
 
     double_dqn_data = []
     for _ in range(trials):
+        print("DQN_double", _)
         dqn = DQN_double(n_state, n_action, n_hidden, lr)
         double_dqn_data.append( q_learning(env, dqn, episodes, gamma=gamma, epsilon=epsilon, replay=True, double=True, n_update=10) )
 
