@@ -9,7 +9,7 @@ import numpy as np
 
 class DQN():
     ''' Deep Q Neural Network class. '''
-    def __init__(self, state_dim, action_dim, hidden_dim=32, lr=0.005):
+    def __init__(self, *, state_dim, action_dim, hidden_dim=32, lr=0.005):
             self.loss = torch.nn.MSELoss()
             self.model = torch.nn.Sequential(
                             torch.nn.Linear(state_dim, hidden_dim),   torch.nn.LeakyReLU(),
@@ -34,60 +34,11 @@ class DQN():
             return self.model(torch.Tensor(state))
 
 
-# Expand DQL class with a replay function.
-class DQN_replay(DQN):
-    
-    def replay(self, memory, size, gamma=0.9):
-        """New replay function"""
-        #Try to improve replay speed
-        if True:  #len(memory) >= size:
-            # Sample experiences from the agent's memory
-            batch = random.sample(memory, min(size, len(memory)))
-            states , actions , next_states , rewards , is_dones = list(map(list, zip(*batch))) #Transpose batch list
-            
-            states = torch.Tensor(states)
-            actions_tensor = torch.Tensor(actions)
-            next_states = torch.Tensor(next_states)
-            rewards = torch.Tensor(rewards)
-            is_dones_tensor = torch.Tensor(is_dones)
-        
-            is_dones_indices = torch.where(is_dones_tensor==True)[0]
-        
-            all_q_values = self.model(states) # predicted q_values of all states
-            all_q_values_next = self.model(next_states)
-            # Update q values
-            all_q_values[range(len(all_q_values)),actions]=(1-gamma)*rewards+gamma*torch.max(all_q_values_next, axis=1).values
-            # add rewards to the q values of the last states
-            all_q_values[is_dones_indices.tolist(), actions_tensor[is_dones].tolist()]=rewards[is_dones_indices.tolist()]
-            
-            self.update(states.tolist(), all_q_values.tolist())
-
-
-class DQN_double():
-    def __init__(self, state_dim, action_dim, hidden_dim, lr):
-        self.dqn_replay = DQN_replay(state_dim, action_dim, hidden_dim, lr)
-        self.dqn = DQN(state_dim, action_dim, hidden_dim, lr)
-
-    def target_update(self):
-        ''' Update target network with the model weights.'''
-        self.dqn.model.load_state_dict(self.dqn_replay.model.state_dict())
-
-    def predict(self, state):
-        return self.dqn.predict(state)
-
-    def replay(self, memory, size, gamma=0.9):
-        return self.dqn_replay.replay(memory, size, gamma)
-
-
-
-def q_learning(env, model, episodes, gamma=0.95, 
-               epsilon=0.1, eps_decay=0.99,
-               replay=False, replay_size=20,
-               double=False, error_threshold=0.03,
-               n_update=10, verbose=False, memory=None):
+def q_learning(*, env, model, episodes, 
+               gamma=0.95, epsilon=0.1, eps_decay=0.99,
+               error_threshold=0.03, verbose=False):
     """Deep Q Learning algorithm using the DQN. """
     final = []
-    memory = memory or []
     win_count = 0
     error_threshold = math.pow(error_threshold,2)
 
@@ -99,19 +50,13 @@ def q_learning(env, model, episodes, gamma=0.95,
         model_updates = 0
         
         while not done and total < 1500:
-            # Implement greedy search policy to explore the state space
-            if random.random() < epsilon:
-                action = env.action_space.sample()
-            else:
-                q_values = model.predict(state)
-                action = torch.argmax(q_values).item()
+            # Epsilon-greedy
+            action = env.action_space.sample() if random.random() < epsilon else torch.argmax(model.predict(state)).item()
             
             # Take action and add reward to total
             next_state, reward, done = env.step(action)[:3]
-            if done:
-                reward = 0
-            if total >= 1500:
-                done = True
+            if done: reward = 0
+            if total >= 1500: done = True
             
             # Update total and memory
             total += reward
@@ -120,24 +65,10 @@ def q_learning(env, model, episodes, gamma=0.95,
             predicted_reward = torch.max(q_values_next).item()
 
             if math.pow(predicted_reward - reward,2) > error_threshold:
-                if replay:
-                    memory.append((state, action, next_state, reward, done))
-                    memory = memory[-replay_size*2:]
-                    model.replay(memory, replay_size, gamma)
-                else:
-                    q_values[action] = reward if done else (1-gamma)*reward + gamma*predicted_reward
-                    model.update(state, q_values)
+                q_values[action] = reward if done else (1-gamma)*reward + gamma*predicted_reward
+                model.update(state, q_values)
                 model_updates += 1
-
-            if double:
-                # Update target network every n_update steps
-                if (episode+model_updates) % n_update == 0:
-                    model.target_update()
         
-
-            if done and not replay:
-                break
-
             state = next_state
         
         # Update epsilon
@@ -150,7 +81,8 @@ def q_learning(env, model, episodes, gamma=0.95,
         if total >= 1500:
             win_count += 1
             if win_count >= 10:
-                print(f"Task solved in {episode} episodes!")
+                if verbose:
+                    print(f"episode: {episode}, Task solved")
                 break
         else:
             win_count = 0
@@ -165,12 +97,7 @@ env = gym.make('CartPole-v1')
 n_state = env.observation_space.shape[0]
 n_action = env.action_space.n
 episodes = 500
-n_hidden = 32
-lr = 0.005
-epsilon = 0.1
-gamma = 0.95
-trials = 20
-error_threshold = 0.03
+trials = 5
 
 save_file = "simple.pickle"
 
@@ -183,20 +110,16 @@ if os.path.exists(save_file):
 
 else:
     samples = []
-    simple_data = []
     for _ in range(trials):
-        dqn = DQN(n_state, n_action, n_hidden, lr)
-        simple_data.append( q_learning(env, dqn, episodes, gamma=gamma, epsilon=epsilon, error_threshold=error_threshold) )
-        print("error_threshold", error_threshold, "trial", _,"steps", len(simple_data[-1]))
-    samples.append(simple_data)
+        dqn = DQN(state_dim=n_state, action_dim=n_action)
+        samples.append( q_learning(env=env, model=dqn, episodes=episodes) )
+        print("trial", _,"steps", len(samples[-1]))
 
     # save the data
     with open(save_file, 'wb') as f:
         pickle.dump(samples, f)
 
-data = []
-for d in samples:
-    data.append( np.array([ x + [x[-1]]*(episodes-len(x)) for x in d ]).mean(0).tolist() )
-
-plot_many(samples[0], titles=[f"trial{x}" for x in range(trials)])
+average = np.array([ x + [x[-1]]*(episodes-len(x)) for x in samples ]).mean(0).tolist()
+samples.append(average)
+plot_many(samples, titles=[f"trial{x}" for x in range(trials)] + ["average"])
 
