@@ -1,6 +1,5 @@
 """
 Experiements to run
- - initialize the DQN network to estimate optimistic Q values
  - use a bottlneck layer for identifying how many times the network has seen this state to calculate the regret for exploration (instead of epsilon greedy)
 """
 
