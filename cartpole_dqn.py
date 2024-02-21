@@ -18,6 +18,7 @@ def clamp(new_value,clamp,old_value):
 class DQN():
     ''' Deep Q Neural Network class. '''
     def __init__(self, *, state_dim, action_dim, hidden_dim=32, lr=0.005):
+            self.action_dim = action_dim
             self.loss = torch.nn.MSELoss() # just as good as huber loss
             self.model = torch.nn.Sequential(
                             torch.nn.Linear(state_dim, hidden_dim),   torch.nn.LeakyReLU(),
@@ -34,17 +35,29 @@ class DQN():
         loss.backward()
         self.optimizer.step()
 
+    def optimistic_init(self, env):
+        """ Train the network to be optimistic about the rewards for random states"""
+        optimistic = np.array([0.98]*self.action_dim)
+        for _ in range(1000):
+            state = env.reset()[0]
+            state = np.array(state)
+            state += np.random.normal(0, 0.1, state.shape)
+            self.update(state, optimistic)
+
     def predict(self, state):
         """ Compute Q values for all actions using the DQL. """
         with torch.no_grad():
             return self.model(torch.Tensor(state))
 
 
-def q_learning(*, env, model, episodes=500, gamma=0.95, epsilon=0.1, eps_decay=0.99, clip_size=0.2, error_threshold=0.03, verbose=False):
+def q_learning(*, env, model, episodes=500, gamma=0.95, epsilon=0.1, eps_decay=0.99, clip_size=0.2, error_threshold=0.03, verbose=False, optimistic_init=True):
     """Deep Q Learning algorithm using the DQN. """
     final = []
     win_count = 0
     error_threshold = math.pow(error_threshold,2)
+
+    if optimistic_init:
+        model.optimistic_init(env)
 
     for episode in range(1,episodes+1):
         # Reset state
