@@ -1,6 +1,7 @@
 """
 Experiements to run
  - use a bottlneck layer for identifying how many times the network has seen this state to calculate the regret for exploration (instead of epsilon greedy)
+ - use a NN that given the S,A predicts S'.  Use this to calculate the S' that is least like the current state and use that as the exploration
 """
 
 import math
