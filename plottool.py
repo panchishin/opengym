@@ -54,5 +54,27 @@ def plot_many(values, title='', titles=None):
     
     plt.show()
 
+
+def plot_mean_std(values_mean, values_std, title, titles):
+    
+    # Define the figure
+    f, ax = plt.subplots(nrows=1, ncols=2, figsize=(12,5))
+    f.suptitle(title)
+    
+    for value, label in zip(values_mean, titles):
+        ax[0].plot(value, label=label)
+        ax[0].set_xlabel('Episodes')
+    ax[0].set_ylabel('Reward Mean')
+    ax[0].legend()
+
+    for value, label in zip(values_std, titles):
+        ax[1].plot(value, label=label)
+        ax[1].set_xlabel('Episodes')
+    ax[1].set_ylabel('Reward STD')
+    ax[1].legend()
+
+    plt.show()
+
+
 if __name__ == "__main__":
-    plot_many([[200,400,100],[100,200,300,400,500,400,300,200,100]],"test")
+    plot_mean_std([[200,400,100],[100,200,300,400,500,400,300,200,100]], [[5,80,20],[10,20,30,40,50,40,30,20,10]],"test", ["a","b"])
