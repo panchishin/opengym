@@ -75,6 +75,12 @@ def plot_mean_std(values_mean, values_std, title, titles):
 
     plt.show()
 
+def scatter_plot(x, y, title, xlabel, ylabel):
+    plt.scatter(x, y)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.show()
 
 if __name__ == "__main__":
     plot_mean_std([[200,400,100],[100,200,300,400,500,400,300,200,100]], [[5,80,20],[10,20,30,40,50,40,30,20,10]],"test", ["a","b"])

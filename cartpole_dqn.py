@@ -2,6 +2,7 @@
 Experiements to run
  - use a bottlneck layer for identifying how many times the network has seen this state to calculate the regret for exploration (instead of epsilon greedy)
  - use a NN that given the S,A predicts S'.  Use this to calculate the S' that is least like the current state and use that as the exploration
+ - or like diffussion, predict delta S
  - use a second NN to predict the reward given the S,A and use the difference in predicted Q to the first NN to estimate regret for exploration
 """
 
@@ -10,6 +11,7 @@ import pickle
 import torch
 from torch.autograd import Variable
 from plottool import plot_res, plot_many, plot_mean_std
+from plottool import scatter_plot
 import random
 import numpy as np
 
@@ -58,7 +60,13 @@ class DQN():
         return DQN(state_dim=self.state_dim, action_dim=self.action_dim, hidden_dim=self.hidden_dim, lr=self.lr)
 
 def q_learning(*, env, model, win_score=500, episodes=500, gamma=0.95, epsilon=0.1, eps_decay=0.99, clip_size=0.2, error_threshold=0.03, verbose=False, optimistic_init=True, use_regret=False):
-    """Deep Q Learning algorithm using the DQN. """
+    """Deep Q Learning algorithm using the DQN.
+    gamma = the discount factor for future rewards
+    epsilon = the exploration rate
+    eps_decay = the rate at which epsilon decays
+    clip_size = the maximum size of the update to the Q value
+    error_threshold = the minimum error required to update the Q value
+    """
     final = []
     win_count = 0
     error_threshold = math.pow(error_threshold,2)
