@@ -166,7 +166,7 @@ import os
 if os.path.exists(save_file):
     # load the data
     with open(save_file, 'rb') as f:
-        samples = pickle.load(f)
+        experiments = pickle.load(f)
 
 else:
     experiments = []
