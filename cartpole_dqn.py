@@ -59,7 +59,9 @@ class DQN():
     def clone(self):
         return DQN(state_dim=self.state_dim, action_dim=self.action_dim, hidden_dim=self.hidden_dim, lr=self.lr)
 
-def q_learning(*, env, model, win_score=500, episodes=500, gamma=0.95, epsilon=0.1, eps_decay=0.99, clip_size=0.2, error_threshold=0.03, verbose=False, optimistic_init=True, use_regret=False):
+def q_learning(*, env, model, win_score=1000, episodes=500,
+               gamma=0.95, epsilon=0.5, eps_decay=0.9, clip_size=0.2, error_threshold=0.03,
+               verbose=False, optimistic_init=True, use_regret=False):
     """Deep Q Learning algorithm using the DQN.
     gamma = the discount factor for future rewards
     epsilon = the exploration rate
