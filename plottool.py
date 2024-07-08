@@ -47,7 +47,7 @@ def plot_many(values, title='', titles=None):
     else:
         for value, label in zip(values, titles):
             ax.plot(value, label=label)
-    ax.axhline(195, c='red',ls='--', label='goal')
+    # ax.axhline(195, c='red',ls='--', label='goal')
     ax.set_xlabel('Episodes')
     ax.set_ylabel('Reward')
     ax.legend()
