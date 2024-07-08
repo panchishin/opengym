@@ -20,7 +20,7 @@ def clamp(new_value,clamp,old_value):
 
 class DQN():
     ''' Deep Q Neural Network class. '''
-    def __init__(self, *, state_dim, action_dim, hidden_dim=32, lr=0.005):
+    def __init__(self, *, state_dim, action_dim, hidden_dim=16, lr=0.005):
             self.state_dim = state_dim
             self.action_dim = action_dim
             self.hidden_dim = hidden_dim
@@ -42,12 +42,15 @@ class DQN():
         loss.backward()
         self.optimizer.step()
 
-    def optimistic_init(self, env):
+    def optimistic_init(self, env, optimism):
         """ Train the network to be optimistic about the rewards for random states"""
-        optimistic = np.array([0.98]*self.action_dim)
+        optimistic = np.array([optimism]*self.action_dim)
         for _ in range(1000):
             state = env.reset()[0]
             state = np.array(state)
+            state += np.random.normal(0, 0.5, state.shape)
+            state += np.random.normal(0, 0.5, state.shape)
+            state += np.random.normal(0, 0.5, state.shape)
             state += np.random.normal(0, 0.5, state.shape)
             self.update(state, optimistic)
 
@@ -61,7 +64,7 @@ class DQN():
 
 def q_learning(*, env, model, win_score=1000, episodes=500,
                gamma=0.95, epsilon=0.5, eps_decay=0.9, clip_size=0.2, error_threshold=0.03,
-               verbose=False, optimistic_init=True, use_regret=False):
+               verbose=False, optimistic_init=True, use_regret=False, optimism=0.9):
     """Deep Q Learning algorithm using the DQN.
     gamma = the discount factor for future rewards
     epsilon = the exploration rate
@@ -77,9 +80,9 @@ def q_learning(*, env, model, win_score=1000, episodes=500,
         regret_model = model.clone()
 
     if optimistic_init:
-        model.optimistic_init(env)
+        model.optimistic_init(env, optimism=optimism)
         if use_regret:
-            regret_model.optimistic_init(env)
+            regret_model.optimistic_init(env, optimism=optimism)
 
     for episode in range(1,episodes+1):
         # Reset state
@@ -157,9 +160,11 @@ env = gym.make('CartPole-v1')
 n_state = env.observation_space.shape[0]
 n_action = env.action_space.n
 episodes = 500
-trials = 5
+trials = 20
 
 save_file = "simple.pickle"
+
+optimism_vals = [0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0]
 
 # check if the file exists
 import os
@@ -171,28 +176,24 @@ if os.path.exists(save_file):
 else:
     experiments = []
 
-    samples = []
-    for _ in range(trials):
-        dqn = DQN(state_dim=n_state, action_dim=n_action)
-        samples.append( q_learning(env=env, model=dqn, episodes=episodes, use_regret=False) )
-        print("trial", _,"steps", len(samples[-1]))
-    experiments.append(samples)
- 
-    samples = []
-    for _ in range(trials):
-        dqn = DQN(state_dim=n_state, action_dim=n_action)
-        samples.append( q_learning(env=env, model=dqn, episodes=episodes, use_regret=True) )
-        print("trial", _,"steps", len(samples[-1]))
-    experiments.append(samples)
-
-    # save the data
-    with open(save_file, 'wb') as f:
-        pickle.dump(experiments, f)
+    for optimism in optimism_vals:
+        print("optimism", optimism)
+        samples = []
+        for _ in range(trials):
+            dqn = DQN(state_dim=n_state, action_dim=n_action)
+            samples.append( q_learning(env=env, model=dqn, episodes=episodes, optimism=optimism) )
+            print(end=f"trial {_:3} steps {len(samples[-1]):4}  ")
+            if _ % 10 == 9:
+                print()
+        experiments.append(samples)
+        # save the data
+        with open(save_file, 'wb') as f:
+            pickle.dump(experiments, f)
 
 averages = []
 for experiment in experiments:
     average = np.array([ x + [x[-1]]*(episodes-len(x)) for x in experiment ]).mean(0).tolist()
     averages.append(average)
 
-plot_many(averages, titles=["Simple DQN", "DQN with Regret"])
+plot_many(averages, titles=[ f"optimism {x}" for x in optimism_vals])
 
