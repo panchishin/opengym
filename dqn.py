@@ -1,31 +1,39 @@
 import math
 import torch
 from torch.autograd import Variable
+from torch.nn import functional as F
 import random
 import numpy as np
 
 def clamp(new_value,clamp,old_value):
     return max(old_value-clamp, min(new_value, old_value+clamp))
 
-class DQN():
+
+class DQN(torch.nn.Module):
     ''' Deep Q Neural Network class. '''
     def __init__(self, *, state_dim:int, action_dim:int, hidden_dim:int=16, lr:float=0.005):
-            self.state_dim = state_dim
-            self.action_dim = action_dim
-            self.hidden_dim = hidden_dim
-            self.lr = lr
+        super(DQN, self).__init__()
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.hidden_dim = hidden_dim
+        self.lr = lr
 
-            self.loss = torch.nn.MSELoss() # just as good as huber loss
-            self.model = torch.nn.Sequential(
-                            torch.nn.Linear(state_dim, hidden_dim),   torch.nn.LeakyReLU(),
-                            torch.nn.Linear(hidden_dim, hidden_dim),  torch.nn.Tanh(),
-                            torch.nn.Linear(hidden_dim, action_dim),  torch.nn.Sigmoid(),
-            )
-            self.optimizer = torch.optim.Adam(self.model.parameters(), lr)
+        self.linear1 = torch.nn.Linear(state_dim, hidden_dim)
+        self.linear2 = torch.nn.Linear(hidden_dim, hidden_dim)
+        self.linear3 = torch.nn.Linear(hidden_dim, action_dim)
+
+        self.loss = torch.nn.MSELoss() # just as good as huber loss
+        self.optimizer = torch.optim.Adam(self.parameters(), lr)
+
+    def forward(self, x):
+        layer1_out = F.leaky_relu(self.linear1(x))
+        layer2_out = F.tanh(self.linear2(layer1_out))
+        out = F.sigmoid(self.linear3(layer2_out))
+        return out
 
     def update(self, state, y):
         """Update the weights of the network given a training sample. """
-        y_pred = self.model(torch.Tensor(state))
+        y_pred = self(torch.Tensor(state))
         self.optimizer.zero_grad()
         loss = self.loss(y_pred, Variable(torch.Tensor(y)))
         loss.backward()
@@ -46,7 +54,7 @@ class DQN():
     def predict(self, state):
         """ Compute Q values for all actions using the DQL. """
         with torch.no_grad():
-            return self.model(torch.Tensor(state))
+            return self(torch.Tensor(state))
 
     def clone(self):
         return DQN(state_dim=self.state_dim, action_dim=self.action_dim, hidden_dim=self.hidden_dim, lr=self.lr)
