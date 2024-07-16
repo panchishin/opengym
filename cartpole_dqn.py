@@ -34,14 +34,13 @@ else:
     experiments = []
 
     for optimism in optimism_vals:
-        print("optimism", optimism)
+        print(end=f"optimism {optimism:5} steps = ")
         samples = []
         for _ in range(trials):
             dqn = DQN(state_dim=n_state, action_dim=n_action)
             samples.append( q_learning(env=env, model=dqn, episodes=episodes, optimism=optimism) )
-            print(end=f"trial {_:3} steps {len(samples[-1]):4}  ")
-            if _ % 10 == 9:
-                print()
+            print(end=f"{len(samples[-1]):3} ")
+        print()
         experiments.append(samples)
         # save the data
         with open(save_file, 'wb') as f:
