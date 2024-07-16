@@ -25,8 +25,8 @@ results = []
 labels = []
 
 experiments = (
-    ("16 resnet", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action) , episodes=episodes, optimism=0.9)),
-    ("64 resnet", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action, hidden_dim=64) , episodes=episodes, optimism=0.9)),
+    ("64 resnet", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action) , episodes=episodes, optimism=0.9)),
+    ("64 resnet + rand", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action, rand=0.001) , episodes=episodes, optimism=0.9)),
 )
 
 if os.path.exists(save_file):
@@ -40,6 +40,8 @@ if True:
         for _ in range(trials):
             samples.append( worker() )
             print(end=f"{len(samples[-1]):3} ")
+            if _ % 5:
+                print(end="| ")
         print()
         results.append(samples)
         labels.append(label)

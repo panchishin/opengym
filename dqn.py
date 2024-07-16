@@ -11,12 +11,13 @@ def clamp(new_value,clamp,old_value):
 
 class DQN(torch.nn.Module):
     ''' Deep Q Neural Network class. '''
-    def __init__(self, *, state_dim:int, action_dim:int, hidden_dim:int=64, lr:float=0.005):
+    def __init__(self, *, state_dim:int, action_dim:int, hidden_dim:int=64, lr:float=0.005, rand=0.0):
         super(DQN, self).__init__()
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.hidden_dim = hidden_dim
         self.lr = lr
+        self.rand = rand
 
         self.linear1 = torch.nn.Linear(state_dim, hidden_dim)
         self.linear2 = torch.nn.Linear(hidden_dim, hidden_dim)
@@ -27,8 +28,9 @@ class DQN(torch.nn.Module):
 
     def forward(self, x):
         layer1_out = F.leaky_relu(self.linear1(x))
-        layer2_out = layer1_out + F.leaky_relu(self.linear2(layer1_out)) # resnet ish
-        return F.sigmoid(self.linear3(layer2_out))
+        layer2_out = F.leaky_relu(self.linear2(layer1_out))
+        layer3_out = self.linear3(layer1_out + layer2_out)
+        return F.sigmoid(layer3_out + torch.randn_like(layer3_out) * self.rand)
 
     def update(self, state, y):
         """Update the weights of the network given a training sample. """
@@ -56,7 +58,7 @@ class DQN(torch.nn.Module):
             return self(torch.Tensor(state))
 
     def clone(self):
-        return DQN(state_dim=self.state_dim, action_dim=self.action_dim, hidden_dim=self.hidden_dim, lr=self.lr)
+        return DQN(state_dim=self.state_dim, action_dim=self.action_dim, hidden_dim=self.hidden_dim, lr=self.lr, rand=self.rand)
 
 def q_learning(*, env, model:DQN, win_score:float=1000, episodes:int=500,
                gamma:float=0.95, epsilon:float=0.5, eps_decay:float=0.9, clip_size:float=0.2, error_threshold:float=0.03,
