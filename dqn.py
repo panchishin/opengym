@@ -11,7 +11,7 @@ def clamp(new_value,clamp,old_value):
 
 class DQN(torch.nn.Module):
     ''' Deep Q Neural Network class. '''
-    def __init__(self, *, state_dim:int, action_dim:int, hidden_dim:int=16, lr:float=0.005):
+    def __init__(self, *, state_dim:int, action_dim:int, hidden_dim:int=64, lr:float=0.005):
         super(DQN, self).__init__()
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -27,9 +27,8 @@ class DQN(torch.nn.Module):
 
     def forward(self, x):
         layer1_out = F.leaky_relu(self.linear1(x))
-        layer2_out = F.tanh(self.linear2(layer1_out))
-        out = F.sigmoid(self.linear3(layer2_out))
-        return out
+        layer2_out = layer1_out + F.leaky_relu(self.linear2(layer1_out)) # resnet ish
+        return F.sigmoid(self.linear3(layer2_out))
 
     def update(self, state, y):
         """Update the weights of the network given a training sample. """

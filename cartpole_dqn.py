@@ -11,6 +11,7 @@ from plottool import plot_many
 import numpy as np
 from dqn import DQN, q_learning
 import gym
+import os
 
 env = gym.make('CartPole-v1')
 
@@ -20,36 +21,36 @@ episodes = 500
 trials = 20
 
 save_file = "simple.pickle"
+results = []
+labels = []
 
-optimism_vals = [0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0]
+experiments = (
+    ("16 resnet", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action) , episodes=episodes, optimism=0.9)),
+    ("64 resnet", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action, hidden_dim=64) , episodes=episodes, optimism=0.9)),
+)
 
-# check if the file exists
-import os
 if os.path.exists(save_file):
-    # load the data
     with open(save_file, 'rb') as f:
-        experiments = pickle.load(f)
+        labels, results = pickle.load(f)
 
-else:
-    experiments = []
-
-    for optimism in optimism_vals:
-        print(end=f"optimism {optimism:5} steps = ")
+if True:
+    for label, worker in experiments[len(labels):]:
+        print(end=f"{label} = ")
         samples = []
         for _ in range(trials):
-            dqn = DQN(state_dim=n_state, action_dim=n_action)
-            samples.append( q_learning(env=env, model=dqn, episodes=episodes, optimism=optimism) )
+            samples.append( worker() )
             print(end=f"{len(samples[-1]):3} ")
         print()
-        experiments.append(samples)
+        results.append(samples)
+        labels.append(label)
         # save the data
         with open(save_file, 'wb') as f:
-            pickle.dump(experiments, f)
+            pickle.dump([labels, results], f)
 
 averages = []
-for experiment in experiments:
-    average = np.array([ x + [x[-1]]*(episodes-len(x)) for x in experiment ]).mean(0).tolist()
+for result in results:
+    average = np.array([ x + [x[-1]]*(episodes-len(x)) for x in result ]).mean(0).tolist()
     averages.append(average)
 
-plot_many(averages, titles=[ f"optimism {x}" for x in optimism_vals])
+plot_many(averages, titles=labels)
 
