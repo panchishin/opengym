@@ -40,7 +40,7 @@ if True:
         for _ in range(trials):
             samples.append( worker() )
             print(end=f"{len(samples[-1]):3} ")
-            if _ % 5:
+            if _ % 5 == 4:
                 print(end="| ")
         print()
         results.append(samples)
