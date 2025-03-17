@@ -11,7 +11,7 @@ def clamp(new_value,clamp,old_value):
 
 class DQN(torch.nn.Module):
     ''' Deep Q Neural Network class. '''
-    def __init__(self, *, state_dim:int, action_dim:int, hidden_dim:int=64, lr:float=0.005, rand=0.0):
+    def __init__(self, *, state_dim:int, action_dim:int, hidden_dim:int=64, lr:float=0.005, rand=0.0, adamw=False):
         super(DQN, self).__init__()
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -24,7 +24,8 @@ class DQN(torch.nn.Module):
         self.linear3 = torch.nn.Linear(hidden_dim, action_dim)
 
         self.loss = torch.nn.MSELoss() # just as good as huber loss
-        self.optimizer = torch.optim.Adam(self.parameters(), lr)
+        optim = torch.optim.AdamW if adamw else torch.optim.Adam
+        self.optimizer = optim(self.parameters(), lr)
 
     def forward(self, x):
         layer1_out = F.leaky_relu(self.linear1(x))

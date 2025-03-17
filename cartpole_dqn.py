@@ -27,6 +27,12 @@ labels = []
 experiments = (
     ("64 resnet", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action) , episodes=episodes, optimism=0.9)),
     ("64 resnet + rand", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action, rand=0.001) , episodes=episodes, optimism=0.9)),
+    # ("64 resnet low error 0.01", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action) , episodes=episodes, optimism=0.9, error_threshold=0.01)),
+    # ("64 resnet + rand low error 0.01", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action, rand=0.001) , episodes=episodes, optimism=0.9, error_threshold=0.01)),
+    # ("64 resnet adam", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action, adamw=False) , episodes=episodes)),
+    # ("64 resnet adamW", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action, adamw=True) , episodes=episodes)),
+    # ("64 resnet adam + rand", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action, adamw=False, rand=0.001) , episodes=episodes)),
+    # ("64 resnet adamW + rand", lambda:q_learning(env=env, model=DQN(state_dim=n_state, action_dim=n_action, adamw=True, rand=0.001) , episodes=episodes)),
 )
 
 if os.path.exists(save_file):
