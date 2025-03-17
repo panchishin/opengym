@@ -10,7 +10,7 @@ import pickle
 from plottool import plot_many
 import numpy as np
 from dqn import DQN, q_learning
-import gym
+import gymnasium as gym
 import os
 
 env = gym.make('CartPole-v1')
