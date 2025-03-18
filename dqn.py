@@ -43,14 +43,12 @@ class DQN(torch.nn.Module):
 
     def optimistic_init(self, env, optimism):
         """ Train the network to be optimistic about the rewards for random states"""
+        noise_std = 0.8 # discovered via trial and error.  0.5 was too low and 1.0 was too high
         optimistic = np.array([optimism]*self.action_dim)
         for _ in range(1000):
             state = env.reset()[0]
             state = np.array(state)
-            state += np.random.normal(0, 0.5, state.shape)
-            state += np.random.normal(0, 0.5, state.shape)
-            state += np.random.normal(0, 0.5, state.shape)
-            state += np.random.normal(0, 0.5, state.shape)
+            state += np.random.normal(0, noise_std, state.shape)
             self.update(state, optimistic)
 
     def predict(self, state):
